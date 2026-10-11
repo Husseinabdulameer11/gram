@@ -1,0 +1,7 @@
+build/
+crash-*
+timeout-*
+oom-*
+fuzz-*.log
+*.o
+*.exe

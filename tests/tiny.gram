@@ -1,0 +1,35 @@
+# tiny - a small imperative language, used by examples/tiny.c
+
+program <- stmt* ;
+stmt    <^ print / while / if / block / assign ;
+print   <- ~PRINT expr ~';' ;
+while   <- ~WHILE expr block ;
+if      <- ~IF expr block (~ELSE block)? ;
+block   <- ~'{' stmt* ~'}' ;
+assign  <- ident ~'=' expr ~';' ;
+
+# Precedence climbs from loosest to tightest. `<^` drops the wrapper node
+# when a level has a single child, so `42` parses to just a number.
+expr    <^ cmp ;
+cmp     <^ sum (cmpop sum)? ;
+sum     <^ prod (addop prod)* ;
+prod    <^ unary (mulop unary)* ;
+unary   <^ neg / atom ;
+neg     <- ~'-' unary ;
+atom    <^ number / ident / ~'(' expr ~')' ;
+
+# Tokens: no whitespace skipping inside, each match is one leaf.
+cmpop   <= '==' / '!=' / '<=' / '>=' / '<' / '>' ;
+addop   <= [+\-] ;
+mulop   <= [*/%] ;
+number  <= [0-9]+ ;
+ident   <= !keyword [A-Za-z_] [A-Za-z0-9_]* ;
+
+keyword <= ('print' / 'while' / 'if' / 'else') !idchar ;
+PRINT   <= 'print' !idchar ;
+WHILE   <= 'while' !idchar ;
+IF      <= 'if'    !idchar ;
+ELSE    <= 'else'  !idchar ;
+idchar  <= [A-Za-z0-9_] ;
+
+skip    <= ([ \t\r\n] / '#' [^\n]*)* ;
